@@ -1,13 +1,44 @@
 import { getResistorOhms } from './resistor.js';
 import { Utils } from './utils.js';
-const log = console.log()
+const log = console.log;
 const select = Utils.select;
 const listen = Utils.listen;
+const sanitize = Utils.sanitizeInput;
 const keys = Object.keys;
 
-const resistor = {};
+const resistor = {
+    band0: select('#b0'),
+    band1: select('#b1'),
+    band2: select('#b2'),
+    band3: select('#b3'),
+    bands: {
+        color1: 'red',
+        color2: 'green',
+        multiplier:'violet',
+        tolerance: 'gold',
+    }
+};
 
-const firstBand ={ 
+const calculateResistorOhms = function(){
+    return getResistorOhms(resistor.bands);
+}
+
+const updateResistorModel = function(inputButton,whatBand,whatProperty){
+        const displayedBand = resistor[whatBand];
+        const displayedColor = displayedBand.classList[1];
+        const newColor = inputButton.classList[1];
+        resistor.bands[whatProperty] = newColor;
+        displayedBand.classList.replace(displayedColor,newColor);
+}
+
+const updateValueDisplay = function(){
+    const newValue = calculateResistorOhms();
+    resistorValue.innerText = newValue;
+}
+
+const resistorValue = document.querySelector('.answer');
+
+const firstBandButtons ={ 
     black: select('#color0 .black'),
     brown: select('#color0 .brown'),
     red: select('#color0 .red'),
@@ -20,7 +51,7 @@ const firstBand ={
     white: select('#color0 .white'),
 }
 
-const secondBand ={ 
+const secondBandButtons ={ 
     black: select('#color1 .black'),
     brown: select('#color1 .brown'),
     red: select('#color1 .red'),
@@ -33,7 +64,7 @@ const secondBand ={
     white: select('#color1 .white'),
 }
 
-const multiplierBand ={ 
+const multiplierBandButtons ={ 
     black: select('#color2 .black'),
     brown: select('#color2 .brown'),
     red: select('#color2 .red'),
@@ -48,7 +79,7 @@ const multiplierBand ={
     silver: select('#color2 .silver'),
 }
 
-const toleranceBand ={ 
+const toleranceBandButtons ={ 
     brown: select('#color3 .brown'),
     red: select('#color3 .red'),
     green: select('#color3 .green'),
@@ -59,46 +90,40 @@ const toleranceBand ={
     silver: select('#color3 .silver'),
 }
 
-keys(firstBand).forEach(color => {
-    const element = firstBand[color];
-    listen(element, 'click', () => {
-        const colorName = element.classList[1];
-        resistor['color1'] = colorName;    
-        console.log(calculateResistorOhms());
+
+
+keys(firstBandButtons).forEach(color => {
+    const button = firstBandButtons[color];
+    listen(button, 'click', () => {
+        updateResistorModel(button,'band0','color1');
+        updateValueDisplay();
     });
 });
 
-keys(secondBand).forEach(color => {
-    const element = secondBand[color];
-    listen(element, 'click', () => {
-        const colorName = element.classList[1];
-        resistor['color2'] = colorName;    
-        console.log(calculateResistorOhms());
+keys(secondBandButtons).forEach(color => {
+    const button = secondBandButtons[color];
+    listen(button, 'click', () => {
+        updateResistorModel(button,'band1','color2');
+        updateValueDisplay();
     });
 });
 
-keys(multiplierBand).forEach(color => {
-    const element = multiplierBand[color];
-    listen(element, 'click', () => {
-        const colorName = element.classList[1];
-        resistor['multiplier'] = colorName;    
-        console.log(calculateResistorOhms());
+keys(multiplierBandButtons).forEach(color => {
+    const button = multiplierBandButtons[color];
+    listen(button, 'click', () => {
+        updateResistorModel(button,'band2','multiplier');   
+        updateValueDisplay();
     });
 });
 
-keys(toleranceBand).forEach(color => {
-    const element = toleranceBand[color];
-    listen(element, 'click', () => {
-        const colorName = element.classList[1];
-        resistor['tolerance'] = colorName;    
-        console.log(calculateResistorOhms());
-
+keys(toleranceBandButtons).forEach(color => {
+    const button = toleranceBandButtons[color];
+    listen(button, 'click', () => {
+        updateResistorModel(button,'band3','tolerance');
+        updateValueDisplay();
     });
 });
 
-function calculateResistorOhms(){
-    console.log(`${resistor.color1} ${resistor.color2} ${resistor.multiplier} ${resistor.tolerance}`);
-    return getResistorOhms(resistor);
-}
+
 
 
