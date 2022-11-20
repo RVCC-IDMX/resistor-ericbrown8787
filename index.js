@@ -1,51 +1,35 @@
 import { getResistorOhms } from './resistor.js';
 import { Utils } from './utils.js';
-const log = console.log;
 const properCase = Utils.properCase;
 const select = Utils.select;
 const listen = Utils.listen;
-const sanitize = Utils.sanitizeInput;
 const keys = Object.keys;
 
+// ======Resistor Model======
 const resistor = {
-  band0: select('#b0'),
-  band1: select('#b1'),
-  band2: select('#b2'),
-  band3: select('#b3'),
-  bands: {
-    color1: 'red',
-    color2: 'green',
-    multiplier: 'violet',
-    tolerance: 'gold',
-  },
+    color1: {
+      diagramBand: select('#b0'),
+      selectionButtons: select('.band0'),
+      color: 'red',
+    },
+    color2: {
+      diagramBand: select('#b1'),
+      selectionButtons: select('.band1'),
+      color: 'green',
+    }, 
+    multiplier: {
+      diagramBand: select('#b2'),
+      selectionButtons: select('.band2'),
+      color: 'violet',},
+    tolerance: {
+      diagramBand: select('#b3'),
+      selectionButtons: select('.band3'),
+      color: 'gold',
+    },
+
 };
 
-const calculateResistorOhms = function () {
-  return getResistorOhms(resistor.bands);
-};
-
-const updateResistorModel = function (inputButton, whatBand, whatProperty) {
-  const bandHeading = select(`.${whatBand} h2`);
-  const previouslySelectedColor = select(`.${whatBand} h2 span.selected`);
-  const selected = document.createElement('span');
-  const displayedBand = resistor[whatBand];
-  const displayedColor = displayedBand.classList[1];
-  const newColor = inputButton.classList[1];
-  resistor.bands[whatProperty] = newColor;
-  selected.classList.add('selected');
-  selected.classList.add(newColor);
-  if (previouslySelectedColor) {
-    bandHeading.removeChild(previouslySelectedColor);
-  }
-  selected.innerText = `${properCase(newColor)}`;
-  bandHeading.appendChild(selected);
-  displayedBand.classList.replace(displayedColor, newColor);
-};
-
-const updateValueDisplay = function () {
-  const newValue = calculateResistorOhms();
-  resistorValue.innerText = newValue;
-};
+// ======DOM Elements======
 
 const resistorValue = document.querySelector('.answer');
 
@@ -101,10 +85,70 @@ const toleranceBandButtons = {
   silver: select('#color3 .silver'),
 };
 
+
+// ======Functions======
+/**
+ * Displays the currently selected color for a given band in the associated interface element's heading
+ * @param {String} whatProperty -The key of the property of the resistor object being displayed
+ */
+const updateSelectedDisplay = function(whatProperty){
+  const property = resistor[whatProperty]
+  const newColor = property.color;
+  const selectionDisplay = select('h2 span.selected', property.selectionButtons);
+  if (selectionDisplay.classList.length > 1) {
+    const oldColor = selectionDisplay.classList[1];
+    selectionDisplay.classList.replace(oldColor,newColor);
+  } else {
+    selectionDisplay.classList.add(newColor);
+  }
+  selectionDisplay.innerText = `${properCase(newColor)}`;
+}
+
+/**
+ * Updates the resistor diagram to reflect the currently selected colors
+ */
+const updateDiagram = function(){
+  keys(resistor).forEach((band) => {
+    const display = resistor[band].diagramBand;
+    const currentColor = display.classList[1];
+    const newColor = resistor[band].color;
+    display.classList.replace(currentColor,newColor);
+  });
+}
+
+/**
+ * Calculates and displays the resistance of the resistor currently represented by the resistor model.
+ */
+const updateValueDisplay = function () {
+  resistorValue.innerText = getResistorOhms(getBands());
+};
+
+/**
+ * Updates the resistor model with the color associated with an interface button 
+ * @param {Element} inputButton - The button clicked
+ * @param {String} whatProperty - The key of the property to update in the resistor model
+ */
+const updateResistorModel = function (inputButton, whatProperty) {
+  resistor[whatProperty].color = inputButton.classList[1];
+};
+
+const getBands= function(){
+      return{
+        color1: resistor.color1.color,
+        color2: resistor.color2.color,
+        multiplier: resistor.multiplier.color,
+        tolerance: resistor.tolerance.color,
+      }
+    }
+
+
+// ======Event Listeners======
 keys(firstBandButtons).forEach((color) => {
   const button = firstBandButtons[color];
   listen(button, 'click', () => {
-    updateResistorModel(button, 'band0', 'color1');
+    updateResistorModel(button, 'color1');
+    updateSelectedDisplay('color1');
+    updateDiagram();
     updateValueDisplay();
   });
 });
@@ -112,7 +156,9 @@ keys(firstBandButtons).forEach((color) => {
 keys(secondBandButtons).forEach((color) => {
   const button = secondBandButtons[color];
   listen(button, 'click', () => {
-    updateResistorModel(button, 'band1', 'color2');
+    updateResistorModel(button, 'color2');
+    updateSelectedDisplay('color2');
+    updateDiagram();
     updateValueDisplay();
   });
 });
@@ -120,7 +166,9 @@ keys(secondBandButtons).forEach((color) => {
 keys(multiplierBandButtons).forEach((color) => {
   const button = multiplierBandButtons[color];
   listen(button, 'click', () => {
-    updateResistorModel(button, 'band2', 'multiplier');
+    updateResistorModel(button, 'multiplier');
+    updateSelectedDisplay('multiplier');
+    updateDiagram();
     updateValueDisplay();
   });
 });
@@ -128,7 +176,14 @@ keys(multiplierBandButtons).forEach((color) => {
 keys(toleranceBandButtons).forEach((color) => {
   const button = toleranceBandButtons[color];
   listen(button, 'click', () => {
-    updateResistorModel(button, 'band3', 'tolerance');
+    updateResistorModel(button, 'tolerance');
+    updateSelectedDisplay('tolerance');
+    updateDiagram();
     updateValueDisplay();
   });
 });
+
+updateSelectedDisplay('color1');
+updateSelectedDisplay('color2');
+updateSelectedDisplay('multiplier');
+updateSelectedDisplay('tolerance');
