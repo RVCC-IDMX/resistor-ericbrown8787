@@ -132,6 +132,9 @@ const updateResistorModel = function (inputButton, whatProperty) {
   resistor[whatProperty].color = inputButton.classList[1];
 };
 
+/**
+ * @returns An object containing the currently selected color values for passing into getResistorOhms()
+ */
 const getBands= function(){
       return{
         color1: resistor.color1.color,
